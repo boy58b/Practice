@@ -16,7 +16,8 @@ import net.sf.jasperreports.engine.export.oasis.JROdtExporter;
 
 public class Report {
 	public static String REPORT_FILE_NAME = "report/report.jasper";
-
+	public static String REPORT_FILE_NAME_XLS = "report/reporttoxls.jasper";
+	
 	public void print(ObservableList<Account> data) {
 		String printFileName = null;
 
@@ -39,14 +40,23 @@ public class Report {
 		try {
 			JRDataSource dataSource = new AccountDataSource(data);
 			printFileName = JasperFillManager.fillReportToFile(
-					REPORT_FILE_NAME, parameters, dataSource);
+					REPORT_FILE_NAME_XLS, parameters, dataSource);
 			if (printFileName != null) {
 				JRXlsExporter exporter = new JRXlsExporter();
 
 				exporter.setParameter(JRExporterParameter.INPUT_FILE_NAME,
 						printFileName);
-				exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME,
-						file.getAbsolutePath());
+			
+				if(!file.getAbsolutePath().substring(file.getAbsolutePath().length()-4,file.getAbsolutePath().length()).equals(".xls")){
+					
+					exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME,
+							file.getAbsolutePath()+".xls");
+				}else{
+					exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME,
+							file.getAbsolutePath());
+				}
+				
+				
 
 				exporter.exportReport();
 			}
@@ -66,8 +76,14 @@ public class Report {
 			if (printFileName != null) {
 				docxExporter.setParameter(JRExporterParameter.INPUT_FILE_NAME,
 						printFileName);
-				docxExporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME,
-						file.getAbsolutePath());
+                if(!file.getAbsolutePath().substring(file.getAbsolutePath().length()-4,file.getAbsolutePath().length()).equals(".odt")){
+					
+                	docxExporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME,
+							file.getAbsolutePath()+".odt");
+				}else{
+					docxExporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME,
+							file.getAbsolutePath());
+				}
 				docxExporter.exportReport();
 			}
 		} catch (JRException e) {

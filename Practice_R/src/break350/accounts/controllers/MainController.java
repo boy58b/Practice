@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -23,6 +24,7 @@ import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -32,6 +34,7 @@ import break350.accounts.Configs;
 import break350.accounts.dao.AccountDao;
 import break350.accounts.dao.AccountDaoImpl;
 import break350.accounts.model.Account;
+import break350.accounts.model.AccountSummary;
 import break350.accounts.model.Days;
 import break350.accounts.model.Daysable;
 import break350.accounts.model.Rate;
@@ -47,6 +50,8 @@ public class MainController implements Initializable, Rateable, Daysable {
 	@FXML
 	private Button export;
 	@FXML
+	private Button imports;
+	@FXML
 	private Button months;
 	@FXML
 	private Button currRate;
@@ -54,10 +59,8 @@ public class MainController implements Initializable, Rateable, Daysable {
 	private Label working;
 	@FXML
 	private ComboBox<String> exportFormat;
-
 	@FXML
 	private TableView<Account> table;
-
 	@FXML
 	private TableColumn<Account, Integer> index;
 	@FXML
@@ -74,26 +77,71 @@ public class MainController implements Initializable, Rateable, Daysable {
 	private TableColumn<Account, Double> eur;
 	@FXML
 	private TableColumn<Account, Double> uah;
-
+	@FXML
 	private AccountDao accountDao;
+	@FXML
+	private TableView<AccountSummary> summary;
+	@FXML
+	private TableColumn<AccountSummary, String> text;
+	@FXML
+	private TableColumn<AccountSummary, Integer> sumworked;
+	@FXML
+	private TableColumn<AccountSummary, Integer> sumown;
+	@FXML
+	private TableColumn<AccountSummary, Integer> sumhospital;
+	@FXML
+	private TableColumn<AccountSummary, Double> sumsalary;
+	@FXML
+	private TableColumn<AccountSummary, Double> sumeur;
+	@FXML
+	private TableColumn<AccountSummary, Double> sumuah;
+	
 
 	public void initialize(URL location, ResourceBundle resources) {
 		setCellsValueFactorys();
 		setCellsFactorys();
 		setOnActions();
-
+		
 		accountDao = new AccountDaoImpl();
 
 		Rate.addAllRateable(this, accountDao);
-		Rate.loadFromWeb();
+	    Rate.loadFromWeb();
 
 		Days.addAllDaysable(this, accountDao);
 		Days.loadDays();
 		Days.initPastMonth();
-
-		table.setItems(accountDao.getAllAccounts());
+		UpdateTable();
+		ResizeWindow();
+        summary.widthProperty().addListener(new ChangeListener<Number>() {
+    @Override
+    public void changed(ObservableValue<? extends Number> source, Number oldWidth, Number newWidth) {
+        Pane header = (Pane) summary.lookup("TableHeaderRow");
+        if (header.isVisible()){
+            header.setMaxHeight(0);
+            header.setMinHeight(0);
+            header.setPrefHeight(0);
+            header.setVisible(false);
+        }
+    }
+});
 	}
+	private void ResizeWindow(){
+		
+	text.setPrefWidth(index.getWidth()+name.getWidth()+7);
+	sumworked.setPrefWidth(worked.getWidth());
+	sumown.setPrefWidth(own.getWidth());
+	sumhospital.setPrefWidth(hospital.getWidth());
+	sumsalary.setPrefWidth(salary.getWidth());
+	sumeur.setPrefWidth(eur.getWidth());
+	sumuah.setPrefWidth(uah.getWidth());
+}
 
+	public void UpdateTable(){
+		accountDao.setRate(Double.valueOf(rate.getText()));
+		table.setItems(accountDao.getAllAccounts());
+		summary.setItems(Account.getSum(accountDao.getAllAccounts()));
+	}
+	
 	public void setStage(Stage stage) {
 		this.stage = stage;
 	}
@@ -103,11 +151,18 @@ public class MainController implements Initializable, Rateable, Daysable {
 	}
 
 	private void setOnActions() {
+		 uah.widthProperty().addListener(new ChangeListener<Number>() {
+		    @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldWidth, Number newWidth) {
+		   ResizeWindow();
+		    }
+		});
+		
 		rate.setOnAction(new EventHandler<ActionEvent>() {
 
 			public void handle(ActionEvent event) {
 				double rate = getRateFromTextField();
 				Rate.setRate(rate);
+				UpdateTable();
 			}
 		});
 		print.setOnAction(new EventHandler<ActionEvent>() {
@@ -139,6 +194,24 @@ public class MainController implements Initializable, Rateable, Daysable {
 				}
 			}
 		});
+		
+		imports.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+					FileChooser fch = new FileChooser();
+					fch.getExtensionFilters().addAll(
+							new FileChooser.ExtensionFilter("MS Excel Document", "*.xls")
+							);
+					File file = fch.showOpenDialog(stage);
+					accountDao = new AccountDaoImpl(file);
+					if(file!=null)
+					UpdateTable();
+			}
+		});
+		
+		
+		
 		months.setOnAction(new EventHandler<ActionEvent>() {
 
 			public void handle(ActionEvent event) {
@@ -164,12 +237,14 @@ public class MainController implements Initializable, Rateable, Daysable {
 				} catch (MalformedURLException e1) {
 					e1.printStackTrace();
 				}
+				UpdateTable();
 			}
 		});
 		currRate.setOnAction(new EventHandler<ActionEvent>() {
 
 			public void handle(ActionEvent event) {
 				Rate.loadFromWeb();
+				UpdateTable();
 			}
 		});
 	}
@@ -187,12 +262,14 @@ public class MainController implements Initializable, Rateable, Daysable {
 	private void setCellsFactorys() {
 		own.setCellFactory(TextFieldTableCell
 				.forTableColumn(new IntegerStringConverter()));
+		
 		own.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Object, Integer>>() {
 
 			public void handle(CellEditEvent<Object, Integer> event) {
 				((Account) event.getTableView().getItems()
 						.get(event.getTablePosition().getRow())).setOwn(event
 						.getNewValue());
+				UpdateTable();
 			}
 		});
 
@@ -204,11 +281,65 @@ public class MainController implements Initializable, Rateable, Daysable {
 				((Account) event.getTableView().getItems()
 						.get(event.getTablePosition().getRow()))
 						.setHospital(event.getNewValue());
+				UpdateTable();
 			}
 		});
 	}
 
 	private void setCellsValueFactorys() {
+		text.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<AccountSummary, String>, ObservableValue<String>>() {
+
+			public ObservableValue<String> call(
+					CellDataFeatures<AccountSummary, String> param) {
+				return param.getValue().textProperty();
+			}
+		});
+		sumworked.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<AccountSummary, Integer>, ObservableValue<Integer>>() {
+
+			public ObservableValue<Integer> call(
+					CellDataFeatures<AccountSummary, Integer> param) {
+				return param.getValue().sumworkedProperty().asObject();
+			}
+		});
+		
+		sumown.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<AccountSummary, Integer>, ObservableValue<Integer>>() {
+
+			public ObservableValue<Integer> call(
+					CellDataFeatures<AccountSummary, Integer> param) {
+				return param.getValue().sumownProperty().asObject();
+			}
+		});
+		sumhospital.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<AccountSummary, Integer>, ObservableValue<Integer>>() {
+
+			public ObservableValue<Integer> call(
+					CellDataFeatures<AccountSummary, Integer> param) {
+				return param.getValue().sumhospitalProperty().asObject();
+			}
+		});
+		sumsalary.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<AccountSummary, Double>, ObservableValue<Double>>() {
+
+			public ObservableValue<Double> call(
+					CellDataFeatures<AccountSummary, Double> param) {
+				return param.getValue().sumsalaryProperty().asObject();
+			}
+		});
+
+		sumeur.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<AccountSummary, Double>, ObservableValue<Double>>() {
+
+			public ObservableValue<Double> call(
+					CellDataFeatures<AccountSummary, Double> param) {
+				return param.getValue().sumeurProperty().asObject();
+			}
+		});
+
+		sumuah.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<AccountSummary, Double>, ObservableValue<Double>>() {
+
+			public ObservableValue<Double> call(
+					CellDataFeatures<AccountSummary, Double> param) {
+				return param.getValue().sumuahProperty().asObject();
+			}
+		});
+		
 		index.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Account, Integer>, ObservableValue<Integer>>() {
 
 			public ObservableValue<Integer> call(
@@ -224,7 +355,6 @@ public class MainController implements Initializable, Rateable, Daysable {
 				return param.getValue().nameProperty();
 			}
 		});
-
 		worked.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Account, Integer>, ObservableValue<Integer>>() {
 
 			public ObservableValue<Integer> call(

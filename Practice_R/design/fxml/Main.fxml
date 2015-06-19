@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.web.*?>
+<?import javafx.scene.*?>
 <?import javafx.geometry.*?>
 <?import javafx.collections.*?>
 <?import javafx.scene.control.*?>
@@ -18,39 +20,41 @@
 						<TableColumn fx:id="index" editable="false" prefWidth="75.0" resizable="false" text="№">
 							
 						</TableColumn>
-						<TableColumn fx:id="name" minWidth="0.0" prefWidth="258.0" text="ПІБ">
+						<TableColumn fx:id="name" minWidth="0.0" prefWidth="99.0" text="ПІБ">
 							
 						</TableColumn>
 						<TableColumn minWidth="0.0" prefWidth="184.0" text="Дні">
 							<columns>
-								<TableColumn fx:id="worked" prefWidth="99.0" text="Відпрацьовані">
+								<TableColumn fx:id="worked" prefWidth="109.0" text="Відпрацьовані">
 									
 								</TableColumn>
-								<TableColumn fx:id="own" editable="true" prefWidth="103.0" text="За свій рахунок">
+								<TableColumn fx:id="own" editable="true" prefWidth="109.0" text="За свій рахунок">
 									
 								</TableColumn>
-								<TableColumn fx:id="hospital" editable="true" minWidth="0.0" prefWidth="70.0" text="Лікарняні">
+								<TableColumn fx:id="hospital" editable="true" minWidth="0.0" prefWidth="99.0" text="Лікарняні">
 									
 								</TableColumn>
 							</columns>
 						</TableColumn>
-						<TableColumn fx:id="salary" minWidth="0.0" prefWidth="78.0" text="Зарплата, €">
+						<TableColumn fx:id="salary" minWidth="0.0" prefWidth="99.0" text="Зарплата, €">
 							
 						</TableColumn>
-						<TableColumn fx:id="eur" prefWidth="100.0" text="∑, €">
+						<TableColumn fx:id="eur" prefWidth="109.0" text="∑, €">
 							
 						</TableColumn>
-						<TableColumn fx:id="uah" prefWidth="100.0" text="∑, грн">
+						<TableColumn fx:id="uah" prefWidth="109.0" text="∑, грн">
 					
 						</TableColumn>
 					</columns>
-         <padding>
+
+               <padding>
             <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
          </padding>
          <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
          </columnResizePolicy>
-				</TableView>
+
+      				</TableView>
    </center>
    <top>
       <AnchorPane prefHeight="39.0" BorderPane.alignment="CENTER">
@@ -64,8 +68,9 @@
       				<TextField fx:id="rate" prefHeight="25.0" prefWidth="79.0" text="0.0" />
                </children>
             </HBox>
-            <HBox alignment="CENTER_RIGHT" prefHeight="39.0" prefWidth="240.0" spacing="7.0" AnchorPane.rightAnchor="7.0">
+            <HBox alignment="CENTER_RIGHT" prefHeight="39.0" prefWidth="300.0" spacing="7.0" AnchorPane.rightAnchor="7.0">
                <children>
+                    <Button fx:id="imports" mnemonicParsing="false" text="Імпорт" />
       				<Button fx:id="print" mnemonicParsing="false" text="Друк" />
       				<Button fx:id="export" mnemonicParsing="false" text="Експорт в:" />
       				<ComboBox fx:id="exportFormat" prefHeight="25.0" prefWidth="100.0" promptText="Формат">
@@ -84,4 +89,17 @@
          </children>
       </AnchorPane>
    </top>
+   <bottom>
+      <TableView fx:id="summary" prefHeight="30.0" prefWidth="900.0" styleClass="sumtable" stylesheets="@../style/main.css" BorderPane.alignment="CENTER">
+        <columns>
+          <TableColumn fx:id="text" prefWidth="176.0" />
+          <TableColumn fx:id="sumworked" minWidth="0.0" prefWidth="108.0" />
+            <TableColumn fx:id="sumown" prefWidth="109.0" />
+            <TableColumn fx:id="sumhospital" prefWidth="99.0" />
+            <TableColumn fx:id="sumsalary" prefWidth="99.0" />
+            <TableColumn fx:id="sumeur" prefWidth="109.0" />
+            <TableColumn fx:id="sumuah" prefWidth="154.0" />
+        </columns>
+      </TableView>
+   </bottom>
 </BorderPane>

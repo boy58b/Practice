@@ -19,7 +19,7 @@ public class Main extends Application {
 					Configs.pathToMainFXML));
 			loader.setLocation(fileMain.toURI().toURL());
 			Parent content = (Parent) loader.load();
-			Scene scene = new Scene(content);
+		   Scene scene = new Scene(content);
 
 			File fileCss = new File(Configs.getProperties().getProperty(
 					Configs.pathToMainCSS));
@@ -30,6 +30,7 @@ public class Main extends Application {
 
 			MainController mainController = loader.getController();
 			mainController.setStage(primaryStage);
+			
 
 			primaryStage.show();
 		} catch (Exception e) {

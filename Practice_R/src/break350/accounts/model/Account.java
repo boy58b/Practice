@@ -3,6 +3,8 @@ package break350.accounts.model;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import break350.accounts.utils.Util;
 
 public class Account {
@@ -24,8 +26,9 @@ public class Account {
 		this.own = new SimpleIntegerProperty(own);
 		this.hospital = new SimpleIntegerProperty(hospital);
 		this.salary = new SimpleDoubleProperty(salary);
-		this.eur = new SimpleDoubleProperty(eur);
-		this.uah = new SimpleDoubleProperty(uah);
+		this.eur = new SimpleDoubleProperty(Util.round(eur, 100));
+		this.uah = new SimpleDoubleProperty(Util.round(uah, 100));
+		calculateSalary();
 	}
 
 	public Account(int index, String name, int own, int hospital,
@@ -40,7 +43,9 @@ public class Account {
 		this.eur = new SimpleDoubleProperty(getEUR(working, worked.get(),
 				hospital, salary));
 		this.uah = new SimpleDoubleProperty(eur.get() * Rate.getRate());
+		calculateSalary();
 	}
+	
 
 	public SimpleIntegerProperty indexProperty() {
 		return index;
@@ -140,4 +145,30 @@ public class Account {
 		double sd = salary / working;
 		return worked * sd + hospital * sd / 2;
 	}
+	
+	public static ObservableList<AccountSummary> getSum(ObservableList<Account> list){
+	  double  sumSalary, sumEur, sumUah;
+	  int sumOwn, sumHospital, sumWorked;
+	  sumWorked=sumOwn=sumHospital=0;
+	  sumSalary=sumEur=sumUah=0;
+	  for(int i = 0; i< list.size(); i++){
+		  Account T =  list.get(i); 
+		  sumOwn+=T.own.get();
+		  sumHospital+=T.hospital.get();
+		  sumSalary+=T.salary.get();
+		  sumEur+=T.eur.get();
+		  sumUah+=T.uah.get();
+		  sumWorked+=T.worked.get();
+	  }
+	  
+	   AccountSummary ac = new AccountSummary(sumWorked, sumOwn, sumHospital, sumSalary,sumEur, sumUah);
+	   
+	    ObservableList<AccountSummary> Summary =FXCollections.observableArrayList();
+	    Summary.add(ac);
+
+		return Summary;
+		
+	}
+	
+	
 }

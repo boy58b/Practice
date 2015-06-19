@@ -1,5 +1,6 @@
 package break350.accounts.dao;
 
+import java.io.File;
 import java.util.Iterator;
 
 import javafx.collections.ObservableList;
@@ -11,6 +12,10 @@ public class AccountDaoImpl implements AccountDao {
 
 	public AccountDaoImpl() {
 		data = AccountLoaderFactory.getAccountLoader().load();
+	}
+
+	public AccountDaoImpl(File file) {
+	    data = AccountLoaderFactory.getAccountLoader().load(file);
 	}
 
 	@Override
